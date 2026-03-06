@@ -43,6 +43,19 @@ interface FrSearchResponse {
   results: FrDocument[];
 }
 
+// FR API uses abbreviated type codes for filtering, but returns full names in results
+const TYPE_TO_FR_CODE: Record<string, string> = {
+  rule: "RULE",
+  proposed_rule: "PRORULE",
+  notice: "NOTICE",
+  presidential_document: "PRESDOCU",
+};
+
+function toFrTypeCode(input: string): string {
+  const lower = input.toLowerCase().replace(/\s+/g, "_");
+  return TYPE_TO_FR_CODE[lower] ?? input.toUpperCase();
+}
+
 function normalizeDocumentType(
   raw: string | undefined
 ): FederalRegisterDocument["type"] {
@@ -84,7 +97,7 @@ function buildSearchParams(
   }
 
   if (type) {
-    params.append("conditions[type][]", type);
+    params.append("conditions[type][]", toFrTypeCode(type));
   }
 
   if (dateFrom) {

@@ -1,6 +1,6 @@
 import type { SbirTopic } from "@/lib/types";
 
-const BASE_URL = "https://api.www.sbir.gov/public/api/topics";
+const BASE_URL = "https://api.www.sbir.gov/public/api/solicitation";
 
 interface SbirRawTopic {
   topicNumber?: string;
@@ -13,6 +13,12 @@ interface SbirRawTopic {
   closeDate?: string;
   solicitation?: string;
   topicDescription?: string;
+}
+
+interface SbirErrorResponse {
+  Code?: string;
+  Message?: string;
+  message?: string;
 }
 
 function normalizeProgram(raw: string | undefined): "SBIR" | "STTR" {
@@ -42,7 +48,6 @@ export async function searchTopics(
   status?: string
 ): Promise<SbirTopic[]> {
   const params = new URLSearchParams();
-  params.set("returnType", "json");
   params.set("rows", "50");
   params.set("start", "0");
 
@@ -57,12 +62,20 @@ export async function searchTopics(
   }
 
   const url = `${BASE_URL}?${params.toString()}`;
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    headers: { Accept: "application/json" },
+  });
 
   if (!response.ok) {
-    throw new Error(
-      `SBIR.gov API error: ${response.status} ${response.statusText}`
-    );
+    const body = await response.text().catch(() => "");
+    let detail = response.statusText;
+    try {
+      const err: SbirErrorResponse = JSON.parse(body);
+      detail = err.Message ?? err.message ?? detail;
+    } catch {
+      // use statusText
+    }
+    throw new Error(`SBIR.gov API error: ${response.status} — ${detail}`);
   }
 
   const data: SbirRawTopic[] = await response.json();
