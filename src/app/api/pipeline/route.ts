@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPipelineItems, createPipelineItem } from "@/lib/db";
-import type { PipelineStage } from "@/lib/types";
+import { getSavedOpportunities, createSavedOpportunity } from "@/lib/db";
 
 export async function GET() {
   try {
-    const items = getPipelineItems();
+    const items = getSavedOpportunities();
     return NextResponse.json(items);
   } catch (error) {
     const message =
@@ -17,7 +16,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as {
       opportunityId?: string;
-      stage?: PipelineStage;
+      title?: string;
+      agency?: string;
+      notes?: string;
     };
 
     if (!body.opportunityId) {
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const item = createPipelineItem(body.opportunityId, body.stage);
+    const item = createSavedOpportunity(body.opportunityId, body.title, body.agency, body.notes);
     return NextResponse.json(item, { status: 201 });
   } catch (error) {
     const message =

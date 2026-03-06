@@ -2,19 +2,24 @@
 
 import { useState, useRef, useCallback } from "react";
 import type { Opportunity, SearchFilters } from "@/lib/types";
+import type { Branch } from "@/lib/branch-config";
+import { BRANCHES } from "@/lib/branch-config";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useQueryClient } from "@tanstack/react-query";
+import { TickerBar } from "./ticker-bar";
+import { KpiStrip } from "./kpi-strip";
 import { Header } from "./header";
-import { Panel } from "./panel";
+import { BranchNav } from "./branch-nav";
+import { StatusBar } from "./status-bar";
 import { OpportunityFeed } from "@/components/panels/opportunity-feed";
-import { PipelineTracker } from "@/components/panels/pipeline-tracker";
-import { RecentAwards } from "@/components/panels/recent-awards";
-import { SpendingTrends } from "@/components/panels/spending-trends";
-import { AlertsPanel } from "@/components/panels/alerts-panel";
+import { SavedReferences } from "@/components/panels/pipeline-tracker";
+import { ContractAwardsPanel } from "@/components/panels/contract-awards";
+import { IntelHub } from "@/components/panels/intel-hub";
 import { OpportunityDrawer } from "@/components/drawers/opportunity-drawer";
 
 export function CommandCenter() {
   const [globalFilters, setGlobalFilters] = useState<SearchFilters>({});
+  const [activeBranch, setActiveBranch] = useState<Branch>(BRANCHES[0]);
   const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
   const [showAlerts, setShowAlerts] = useState(false);
   const searchFocusRef = useRef<(() => void) | null>(null);
@@ -44,7 +49,10 @@ export function CommandCenter() {
   });
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-screen bg-surface-0">
+      {/* Bloomberg-style scrolling budget ticker */}
+      <TickerBar />
+
       <Header
         onSearch={handleSearch}
         alertCount={0}
@@ -52,19 +60,32 @@ export function CommandCenter() {
         onToggleSettings={handleToggleSettings}
         searchFocusRef={searchFocusRef}
       />
-      <div className="flex-1 grid grid-rows-[1fr_1fr] grid-cols-[2fr_3fr] gap-px bg-border overflow-hidden">
-        <OpportunityFeed filters={globalFilters} onSelect={setSelectedOpportunity} />
-        <PipelineTracker />
-        <RecentAwards naicsCode={globalFilters.naicsCodes?.[0]} />
-        <div className="grid grid-rows-[1fr_1fr] gap-px bg-border">
-          <Panel title="Spending Trends">
-            <SpendingTrends />
-          </Panel>
-          <Panel title="Alerts" className={showAlerts ? "ring-1 ring-blue-500" : ""}>
-            <AlertsPanel />
-          </Panel>
+      <BranchNav activeBranch={activeBranch} onSelect={setActiveBranch} />
+
+      {/* KPI Strip — top-line DoD budget figures */}
+      <KpiStrip />
+
+      {/* Main grid — 3-column layout */}
+      <div className="flex-1 grid grid-cols-[minmax(280px,2fr)_minmax(280px,2fr)_minmax(320px,3fr)] gap-px bg-surface-gap overflow-hidden">
+        {/* Left column: Opportunities (full height) */}
+        <OpportunityFeed
+          filters={globalFilters}
+          branch={activeBranch}
+          onSelect={setSelectedOpportunity}
+        />
+
+        {/* Center column: Saved References + Contract Awards stacked */}
+        <div className="grid grid-rows-[1fr_1fr] gap-px bg-surface-gap">
+          <SavedReferences />
+          <ContractAwardsPanel branch={activeBranch} />
         </div>
+
+        {/* Right column: Intel Hub (PEO / Budget / Spending / SBIR / DFARS / Regs / Org) */}
+        <IntelHub branch={activeBranch} />
       </div>
+
+      <StatusBar branch={activeBranch} />
+
       {selectedOpportunity && (
         <OpportunityDrawer
           opportunity={selectedOpportunity}

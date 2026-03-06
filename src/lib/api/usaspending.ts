@@ -39,8 +39,9 @@ interface SpendingCategoryResponse {
   results: SpendingCategoryResult[];
   page_metadata: {
     page: number;
-    total: number;
-    limit: number;
+    total?: number;
+    limit?: number;
+    next?: number | null;
     hasNext: boolean;
   };
 }
@@ -55,13 +56,8 @@ interface SpendingOverTimeResult {
 }
 
 interface SpendingOverTimeResponse {
+  group: string;
   results: SpendingOverTimeResult[];
-  page_metadata: {
-    page: number;
-    total: number;
-    limit: number;
-    hasNext: boolean;
-  };
 }
 
 async function postJson<T>(endpoint: string, body: unknown): Promise<T> {
@@ -122,7 +118,36 @@ export async function getSpendingByAgency(
 
   return {
     data: response.results.map(normalizeSpendingRecord),
-    total: response.page_metadata.total,
+    total: response.page_metadata.total ?? response.results.length,
+    hasMore: response.page_metadata.hasNext,
+  };
+}
+
+/** Get spending broken down by sub-agency within a set of toptier agencies */
+export async function getSpendingBySubAgency(
+  timePeriods: TimePeriod[],
+  agencies: { type: string; tier: string; name: string }[],
+  page = 1,
+  limit = 10
+): Promise<{ data: SpendingRecord[]; total: number; hasMore: boolean }> {
+  const body: SpendingCategoryRequest = {
+    filters: {
+      time_period: timePeriods,
+      agencies,
+    },
+    category: "awarding_subagency",
+    page,
+    limit,
+  };
+
+  const response = await postJson<SpendingCategoryResponse>(
+    "/search/spending_by_category/awarding_subagency",
+    body
+  );
+
+  return {
+    data: response.results.map(normalizeSpendingRecord),
+    total: response.page_metadata.total ?? response.results.length,
     hasMore: response.page_metadata.hasNext,
   };
 }
@@ -130,10 +155,14 @@ export async function getSpendingByAgency(
 export async function getSpendingByNaics(
   timePeriods: TimePeriod[],
   page = 1,
-  limit = 10
+  limit = 10,
+  agencies?: { type: string; tier: string; name: string }[]
 ): Promise<{ data: SpendingRecord[]; total: number; hasMore: boolean }> {
+  const filters: SpendingFilters = { time_period: timePeriods };
+  if (agencies?.length) filters.agencies = agencies;
+
   const body: SpendingCategoryRequest = {
-    filters: { time_period: timePeriods },
+    filters,
     page,
     limit,
   };
@@ -145,7 +174,7 @@ export async function getSpendingByNaics(
 
   return {
     data: response.results.map(normalizeSpendingRecord),
-    total: response.page_metadata.total,
+    total: response.page_metadata.total ?? response.results.length,
     hasMore: response.page_metadata.hasNext,
   };
 }
@@ -154,10 +183,14 @@ export async function getSpendingOverTime(
   timePeriods: TimePeriod[],
   group: "month" | "quarter" | "fiscal_year" = "month",
   page = 1,
-  limit = 12
+  limit = 12,
+  agencies?: { type: string; tier: string; name: string }[]
 ): Promise<{ data: SpendingByTime[]; total: number; hasMore: boolean }> {
+  const filters: SpendingFilters = { time_period: timePeriods };
+  if (agencies?.length) filters.agencies = agencies;
+
   const body: SpendingOverTimeRequest = {
-    filters: { time_period: timePeriods },
+    filters,
     group,
     page,
     limit,
@@ -168,10 +201,11 @@ export async function getSpendingOverTime(
     body
   );
 
+  const results = response.results ?? [];
   return {
-    data: response.results.map(normalizeSpendingByTime),
-    total: response.page_metadata.total,
-    hasMore: response.page_metadata.hasNext,
+    data: results.map(normalizeSpendingByTime),
+    total: results.length,
+    hasMore: false,
   };
 }
 
@@ -215,7 +249,7 @@ export async function searchAwardSpending(
 
   return {
     data: response.results.map(normalizeSpendingRecord),
-    total: response.page_metadata.total,
+    total: response.page_metadata.total ?? response.results.length,
     hasMore: response.page_metadata.hasNext,
   };
 }

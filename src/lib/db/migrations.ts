@@ -14,10 +14,9 @@ export function runMigrations(db: Database.Database): void {
     CREATE TABLE IF NOT EXISTS pipeline_items (
       id TEXT PRIMARY KEY,
       opportunity_id TEXT NOT NULL,
-      stage TEXT NOT NULL DEFAULT 'tracking',
+      title TEXT,
+      agency TEXT,
       notes TEXT,
-      decision_date TEXT,
-      tags TEXT DEFAULT '[]',
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
     );
@@ -41,14 +40,13 @@ export function runMigrations(db: Database.Database): void {
 
     CREATE TABLE IF NOT EXISTS preferences (
       id TEXT PRIMARY KEY DEFAULT 'default',
-      default_naics TEXT DEFAULT '["541511","541512","541519"]',
+      default_naics TEXT DEFAULT '["336411","336414","334511","541330","541511","541512","541715","928110"]',
       refresh_rates TEXT DEFAULT '{"opportunities":60000,"awards":300000,"spending":300000}',
       panel_layout TEXT DEFAULT '{}',
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
     );
 
-    CREATE INDEX IF NOT EXISTS idx_pipeline_stage ON pipeline_items(stage);
     CREATE INDEX IF NOT EXISTS idx_pipeline_opportunity ON pipeline_items(opportunity_id);
     CREATE INDEX IF NOT EXISTS idx_tracked_entities_uei ON tracked_entities(uei);
   `);

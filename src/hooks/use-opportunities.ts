@@ -22,10 +22,10 @@ async function fetchOpportunities(
   return res.json();
 }
 
-export function useOpportunities(filters: SearchFilters, limit = 25, offset = 0) {
+export function useOpportunities(filters: SearchFilters, limit = 25, offset = 0, enabled = false) {
   return useQuery({
     queryKey: ["opportunities", filters, limit, offset],
     queryFn: () => fetchOpportunities(filters, limit, offset),
-    refetchInterval: 60 * 1000,
+    enabled,
   });
 }

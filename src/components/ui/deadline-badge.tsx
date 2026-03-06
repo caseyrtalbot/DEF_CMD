@@ -5,10 +5,10 @@ export function DeadlineBadge({ deadline }: { deadline: string | null }) {
 
   const days = differenceInDays(parseISO(deadline), new Date());
 
-  let color = "text-green-500";
-  if (days <= 3) color = "text-red-500";
-  else if (days <= 7) color = "text-amber-500";
-  else if (days <= 14) color = "text-amber-400";
+  let color = "text-data-green";
+  if (days <= 3) color = "text-data-red";
+  else if (days <= 7) color = "text-data-amber";
+  else if (days <= 14) color = "text-data-amber";
 
   if (days < 0) {
     return <span className="text-[10px] text-muted-foreground line-through">Closed</span>;

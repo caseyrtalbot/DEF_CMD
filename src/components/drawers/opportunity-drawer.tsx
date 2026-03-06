@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DeadlineBadge } from "@/components/ui/deadline-badge";
-import { useAddToPipeline } from "@/hooks";
+import { useSaveOpportunity } from "@/hooks";
 
 interface OpportunityDrawerProps {
   opportunity: Opportunity;
@@ -42,10 +42,10 @@ function DetailField({
 }
 
 const TYPE_BADGE_COLORS: Record<Opportunity["type"], string> = {
-  presolicitation: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  solicitation: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  award: "bg-green-500/20 text-green-400 border-green-500/30",
-  combined: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+  presolicitation: "bg-data-amber/20 text-data-amber border-data-amber/30",
+  solicitation: "bg-data-blue/20 text-data-blue border-data-blue/30",
+  award: "bg-data-green/20 text-data-green border-data-green/30",
+  combined: "bg-data-cyan/20 text-data-cyan border-data-cyan/30",
 };
 
 const TYPE_LABELS: Record<Opportunity["type"], string> = {
@@ -59,10 +59,14 @@ export function OpportunityDrawer({
   opportunity,
   onClose,
 }: OpportunityDrawerProps) {
-  const addToPipeline = useAddToPipeline();
+  const saveOpportunity = useSaveOpportunity();
 
-  const handleAddToPipeline = () => {
-    addToPipeline.mutate({ opportunityId: opportunity.id, stage: "tracking" });
+  const handleSave = () => {
+    saveOpportunity.mutate({
+      opportunityId: opportunity.id,
+      title: opportunity.title,
+      agency: opportunity.agency,
+    });
   };
 
   const pop = opportunity.placeOfPerformance;
@@ -93,14 +97,18 @@ export function OpportunityDrawer({
         </SheetHeader>
 
         <div className="px-4 pb-6 space-y-5">
-          {/* Add to Pipeline */}
+          {/* Save for Reference */}
           <Button
             size="sm"
-            onClick={handleAddToPipeline}
-            disabled={addToPipeline.isPending}
+            onClick={handleSave}
+            disabled={saveOpportunity.isPending || saveOpportunity.isSuccess}
             className="w-full"
           >
-            {addToPipeline.isPending ? "Adding..." : "Add to Pipeline"}
+            {saveOpportunity.isSuccess
+              ? "Saved"
+              : saveOpportunity.isPending
+                ? "Saving..."
+                : "Save for Reference"}
           </Button>
 
           {/* Status Row */}
@@ -114,7 +122,7 @@ export function OpportunityDrawer({
             {opportunity.setAside && (
               <Badge
                 variant="outline"
-                className="text-[10px] border-purple-500/30 text-purple-400"
+                className="text-[10px] border-data-purple/30 text-data-purple"
               >
                 {opportunity.setAside}
               </Badge>
@@ -175,7 +183,7 @@ export function OpportunityDrawer({
                   <div key={`${poc.name}-${i}`} className="text-xs">
                     <p className="text-foreground font-medium">{poc.name}</p>
                     {poc.email && (
-                      <p className="text-cyan-400 text-[11px]">{poc.email}</p>
+                      <p className="text-data-cyan text-[11px]">{poc.email}</p>
                     )}
                     {poc.phone && (
                       <p className="text-muted-foreground text-[11px]">
@@ -211,7 +219,7 @@ export function OpportunityDrawer({
                     href={link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block text-[11px] text-blue-400 hover:underline truncate"
+                    className="block text-[11px] text-data-blue hover:underline truncate"
                   >
                     {link}
                   </a>

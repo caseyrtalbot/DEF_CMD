@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchOpportunities } from "@/lib/api/sam-opportunities";
+import { DOD_AGENCIES } from "@/lib/dod-config";
 import type { SearchFilters } from "@/lib/types";
 
 export async function GET(request: NextRequest) {
@@ -14,8 +15,9 @@ export async function GET(request: NextRequest) {
     const naicsCodes = params.get("naicsCodes");
     if (naicsCodes) filters.naicsCodes = naicsCodes.split(",");
 
+    // Default to DoD agencies unless caller specifies others
     const agencies = params.get("agencies");
-    if (agencies) filters.agencies = agencies.split(",");
+    filters.agencies = agencies ? agencies.split(",") : [...DOD_AGENCIES];
 
     const setAsides = params.get("setAsides");
     if (setAsides) filters.setAsides = setAsides.split(",");
@@ -39,6 +41,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message.includes("429") ? 429 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

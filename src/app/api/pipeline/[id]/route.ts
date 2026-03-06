@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updatePipelineItem, deletePipelineItem } from "@/lib/db";
-import type { PipelineStage } from "@/lib/types";
+import { updateSavedOpportunity, deleteSavedOpportunity } from "@/lib/db";
 
 export async function PATCH(
   request: NextRequest,
@@ -8,14 +7,9 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const body = (await request.json()) as Partial<{
-      stage: PipelineStage;
-      notes: string | null;
-      decisionDate: string | null;
-      tags: string[];
-    }>;
+    const body = (await request.json()) as { notes?: string };
 
-    updatePipelineItem(id, body);
+    updateSavedOpportunity(id, body);
     return NextResponse.json({ success: true });
   } catch (error) {
     const message =
@@ -30,7 +24,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    deletePipelineItem(id);
+    deleteSavedOpportunity(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     const message =

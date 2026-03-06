@@ -4,8 +4,7 @@ import { join } from "path";
 import { randomUUID } from "crypto";
 import { runMigrations } from "./migrations";
 import type {
-  PipelineItem,
-  PipelineStage,
+  SavedOpportunity,
   SavedSearch,
   SearchFilters,
   TrackedEntity,
@@ -50,10 +49,9 @@ function getDb(): Database.Database {
 interface PipelineItemRow {
   id: string;
   opportunity_id: string;
-  stage: string;
+  title: string | null;
+  agency: string | null;
   notes: string | null;
-  decision_date: string | null;
-  tags: string;
   created_at: string;
   updated_at: string;
 }
@@ -95,14 +93,13 @@ interface PreferencesRow {
 
 // --- Row → Model mappers ---
 
-function toPipelineItem(row: PipelineItemRow): PipelineItem {
+function toSavedOpportunity(row: PipelineItemRow): SavedOpportunity {
   return {
     id: row.id,
     opportunityId: row.opportunity_id,
-    stage: row.stage as PipelineStage,
+    title: row.title,
+    agency: row.agency,
     notes: row.notes,
-    decisionDate: row.decision_date,
-    tags: JSON.parse(row.tags) as string[],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -148,87 +145,50 @@ function toPreferences(row: PreferencesRow): Preferences {
   };
 }
 
-// --- Pipeline Items ---
+// --- Saved Opportunities ---
 
-export function getPipelineItems(): PipelineItem[] {
+export function getSavedOpportunities(): SavedOpportunity[] {
   const db = getDb();
   const rows = db
     .prepare("SELECT * FROM pipeline_items ORDER BY created_at DESC")
     .all() as PipelineItemRow[];
-  return rows.map(toPipelineItem);
+  return rows.map(toSavedOpportunity);
 }
 
-export function getPipelineItemsByStage(stage: PipelineStage): PipelineItem[] {
-  const db = getDb();
-  const rows = db
-    .prepare(
-      "SELECT * FROM pipeline_items WHERE stage = ? ORDER BY created_at DESC"
-    )
-    .all(stage) as PipelineItemRow[];
-  return rows.map(toPipelineItem);
-}
-
-export function createPipelineItem(
+export function createSavedOpportunity(
   opportunityId: string,
-  stage: PipelineStage = "tracking"
-): PipelineItem {
+  title?: string,
+  agency?: string,
+  notes?: string
+): SavedOpportunity {
   const db = getDb();
   const id = randomUUID();
   const now = new Date().toISOString();
 
   db.prepare(
-    `INSERT INTO pipeline_items (id, opportunity_id, stage, tags, created_at, updated_at)
-     VALUES (?, ?, ?, '[]', ?, ?)`
-  ).run(id, opportunityId, stage, now, now);
+    `INSERT INTO pipeline_items (id, opportunity_id, title, agency, notes, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
+  ).run(id, opportunityId, title ?? null, agency ?? null, notes ?? null, now, now);
 
   const row = db
     .prepare("SELECT * FROM pipeline_items WHERE id = ?")
     .get(id) as PipelineItemRow;
-  return toPipelineItem(row);
+  return toSavedOpportunity(row);
 }
 
-export function updatePipelineItem(
+export function updateSavedOpportunity(
   id: string,
-  updates: Partial<{
-    stage: PipelineStage;
-    notes: string | null;
-    decisionDate: string | null;
-    tags: string[];
-  }>
+  updates: { notes?: string }
 ): void {
   const db = getDb();
-  const setClauses: string[] = [];
-  const values: unknown[] = [];
-
-  if (updates.stage !== undefined) {
-    setClauses.push("stage = ?");
-    values.push(updates.stage);
-  }
-  if (updates.notes !== undefined) {
-    setClauses.push("notes = ?");
-    values.push(updates.notes);
-  }
-  if (updates.decisionDate !== undefined) {
-    setClauses.push("decision_date = ?");
-    values.push(updates.decisionDate);
-  }
-  if (updates.tags !== undefined) {
-    setClauses.push("tags = ?");
-    values.push(JSON.stringify(updates.tags));
-  }
-
-  if (setClauses.length === 0) return;
-
-  setClauses.push("updated_at = ?");
-  values.push(new Date().toISOString());
-  values.push(id);
+  if (updates.notes === undefined) return;
 
   db.prepare(
-    `UPDATE pipeline_items SET ${setClauses.join(", ")} WHERE id = ?`
-  ).run(...values);
+    "UPDATE pipeline_items SET notes = ?, updated_at = ? WHERE id = ?"
+  ).run(updates.notes, new Date().toISOString(), id);
 }
 
-export function deletePipelineItem(id: string): void {
+export function deleteSavedOpportunity(id: string): void {
   const db = getDb();
   db.prepare("DELETE FROM pipeline_items WHERE id = ?").run(id);
 }

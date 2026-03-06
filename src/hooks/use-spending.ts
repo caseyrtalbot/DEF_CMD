@@ -20,6 +20,5 @@ export function useSpending(
   return useQuery({
     queryKey: ["spending", view, startDate, endDate],
     queryFn: () => fetchSpending(view, startDate, endDate),
-    refetchInterval: 5 * 60 * 1000,
   });
 }

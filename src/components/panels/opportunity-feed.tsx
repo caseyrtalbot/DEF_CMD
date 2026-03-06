@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import type { Opportunity, SearchFilters } from "@/lib/types";
+import type { Branch } from "@/lib/branch-config";
 import { useOpportunities } from "@/hooks/use-opportunities";
 import { Panel } from "@/components/dashboard/panel";
-import { Badge } from "@/components/ui/badge";
 import { DeadlineBadge } from "@/components/ui/deadline-badge";
 
 interface OpportunityFeedProps {
   filters: SearchFilters;
+  branch: Branch;
   onSelect: (opp: Opportunity) => void;
 }
 
@@ -19,105 +20,143 @@ const TYPE_FILTERS = [
   { label: "AWARD", value: "a" },
 ] as const;
 
-const TYPE_BADGE_COLORS: Record<Opportunity["type"], string> = {
-  presolicitation: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  solicitation: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  award: "bg-green-500/20 text-green-400 border-green-500/30",
-  combined: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+const TYPE_COLORS: Record<Opportunity["type"], string> = {
+  presolicitation: "text-data-amber",
+  solicitation: "text-data-blue",
+  award: "text-data-green",
+  combined: "text-data-cyan",
 };
 
 const TYPE_LABELS: Record<Opportunity["type"], string> = {
-  presolicitation: "PRE-SOL",
+  presolicitation: "PRE",
   solicitation: "SOL",
-  award: "AWARD",
-  combined: "COMBINED",
+  award: "AWD",
+  combined: "CMB",
 };
 
-export function OpportunityFeed({ filters, onSelect }: OpportunityFeedProps) {
+export function OpportunityFeed({ filters, branch, onSelect }: OpportunityFeedProps) {
   const [typeFilter, setTypeFilter] = useState<string | undefined>(undefined);
+  const [searchTriggered, setSearchTriggered] = useState(false);
 
   const mergedFilters: SearchFilters = {
     ...filters,
     ...(typeFilter ? { opportunityType: typeFilter } : {}),
+    ...(branch.id !== "all" ? { agencies: branch.samAgencies } : {}),
   };
 
-  const { data, isLoading, dataUpdatedAt } = useOpportunities(mergedFilters);
+  const { data, isLoading, dataUpdatedAt, refetch, isFetching } = useOpportunities(
+    mergedFilters,
+    25,
+    0,
+    searchTriggered
+  );
+
+  const handleSearch = useCallback(() => {
+    if (searchTriggered) {
+      refetch();
+    } else {
+      setSearchTriggered(true);
+    }
+  }, [searchTriggered, refetch]);
 
   const opportunities = data?.data ?? [];
+  const total = data?.total ?? 0;
   const lastUpdated = dataUpdatedAt ? new Date(dataUpdatedAt) : null;
 
   return (
     <Panel
       title="Opportunities"
       lastUpdated={lastUpdated}
-      isLoading={isLoading}
+      isLoading={isLoading || isFetching}
+      accentColor={branch.color}
       actions={
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           {TYPE_FILTERS.map((tf) => (
             <button
               key={tf.label}
               onClick={() => setTypeFilter(tf.value)}
-              className={`px-1.5 py-0.5 text-[10px] font-mono-data font-semibold rounded transition-colors ${
+              className={`px-1.5 py-0.5 text-[10px] font-mono-data font-semibold transition-colors ${
                 typeFilter === tf.value
-                  ? "bg-blue-500/20 text-blue-400"
+                  ? "text-signal bg-signal"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {tf.label}
             </button>
           ))}
+          <button
+            onClick={handleSearch}
+            disabled={isFetching}
+            className="ml-1.5 px-2 py-0.5 text-[10px] font-mono-data font-bold bg-signal text-signal-foreground hover:bg-signal/90 disabled:opacity-50 transition-colors"
+          >
+            {isFetching ? "..." : searchTriggered ? "REFRESH" : "SEARCH"}
+          </button>
+          {total > 0 && (
+            <span className="ml-1 text-[10px] font-mono-data text-muted-foreground">
+              {total.toLocaleString()}
+            </span>
+          )}
         </div>
       }
     >
-      {isLoading && opportunities.length === 0 ? (
-        <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-          Loading opportunities...
+      {!searchTriggered && opportunities.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-1.5">
+          <span className="text-xs">Select filters and press SEARCH</span>
+          <span className="text-[10px] font-mono-data">SAM.GOV API — manual queries only</span>
+        </div>
+      ) : isLoading && opportunities.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-1.5">
+          <span className="text-xs">Querying SAM.gov...</span>
+          <span className="text-[10px] font-mono-data">SAM.GOV API</span>
         </div>
       ) : opportunities.length === 0 ? (
-        <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-          No opportunities found
+        <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-1.5">
+          <span className="text-xs">No opportunities found</span>
+          <span className="text-[10px] font-mono-data">Adjust filters and search again</span>
         </div>
       ) : (
-        <div className="divide-y divide-border">
-          {opportunities.map((opp) => (
+        <div>
+          {/* Column header */}
+          <div className="flex items-center px-2.5 py-1.5 text-[10px] font-mono-data text-muted-foreground uppercase border-b border-border bg-surface-0">
+            <span className="w-7">TYPE</span>
+            <span className="flex-1 ml-1">TITLE / AGENCY</span>
+            <span className="w-14 text-right">NAICS</span>
+            <span className="w-16 text-right">DEADLINE</span>
+          </div>
+          {opportunities.map((opp, i) => (
             <button
               key={opp.id}
               onClick={() => onSelect(opp)}
-              className="w-full text-left px-3 py-2 hover:bg-muted/50 transition-colors focus:outline-none focus:bg-muted/50"
+              className={`stagger-item data-row w-full text-left px-2.5 py-2 border-b border-border-subtle focus:outline-none focus:bg-primary/5`}
+              style={{ animationDelay: `${i * 30}ms` }}
             >
-              <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start gap-1">
+                <span className={`text-[10px] font-mono-data font-bold w-7 shrink-0 ${TYPE_COLORS[opp.type]}`}>
+                  {TYPE_LABELS[opp.type]}
+                </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-foreground truncate leading-tight">
+                  <p className="text-[13px] font-medium text-foreground truncate leading-tight">
                     {opp.title}
                   </p>
-                  <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                  <p className="text-[11px] text-muted-foreground truncate mt-0.5">
                     {opp.agency}
-                    {opp.office ? ` / ${opp.office}` : ""}
+                    {opp.office ? ` — ${opp.office}` : ""}
                   </p>
                 </div>
-                <DeadlineBadge deadline={opp.responseDeadline} />
+                <span className="text-[10px] font-mono-data text-muted-foreground w-14 text-right shrink-0">
+                  {opp.naicsCodes[0]?.code ?? "—"}
+                </span>
+                <div className="w-16 text-right shrink-0">
+                  <DeadlineBadge deadline={opp.responseDeadline} />
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 mt-1">
-                <Badge
-                  variant="outline"
-                  className={`text-[9px] px-1 py-0 h-4 ${TYPE_BADGE_COLORS[opp.type]}`}
-                >
-                  {TYPE_LABELS[opp.type]}
-                </Badge>
-                {opp.naicsCodes.length > 0 && (
-                  <span className="text-[9px] font-mono-data text-muted-foreground">
-                    {opp.naicsCodes[0].code}
-                  </span>
-                )}
-                {opp.setAside && (
-                  <Badge
-                    variant="outline"
-                    className="text-[9px] px-1 py-0 h-4 border-purple-500/30 text-purple-400"
-                  >
+              {opp.setAside && (
+                <div className="ml-7 mt-0.5">
+                  <span className="text-[9px] font-mono-data px-1 py-0 text-data-purple bg-data-purple/10 border border-data-purple/20">
                     {opp.setAside}
-                  </Badge>
-                )}
-              </div>
+                  </span>
+                </div>
+              )}
             </button>
           ))}
         </div>

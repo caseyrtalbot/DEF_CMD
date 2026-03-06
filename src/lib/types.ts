@@ -37,25 +37,6 @@ export interface PointOfContact {
   phone: string | null;
 }
 
-export interface Award {
-  id: string;
-  piid: string;
-  agencyId: string;
-  agencyName: string;
-  vendorName: string;
-  vendorUei: string | null;
-  awardAmount: number;
-  obligatedAmount: number;
-  signedDate: string;
-  effectiveDate: string;
-  completionDate: string | null;
-  naicsCode: string | null;
-  competitionType: string | null;
-  setAside: string | null;
-  contractType: string | null;
-  description: string | null;
-}
-
 export interface SpendingRecord {
   id: string;
   name: string;
@@ -86,24 +67,14 @@ export interface Entity {
   pointOfContact: PointOfContact | null;
 }
 
-export type PipelineStage =
-  | "tracking"
-  | "bid_no_bid"
-  | "drafting"
-  | "submitted"
-  | "awarded"
-  | "lost";
-
-export interface PipelineItem {
+export interface SavedOpportunity {
   id: string;
   opportunityId: string;
-  stage: PipelineStage;
+  title: string | null;
+  agency: string | null;
   notes: string | null;
-  decisionDate: string | null;
-  tags: string[];
   createdAt: string;
   updatedAt: string;
-  opportunity?: Opportunity;
 }
 
 export interface SearchFilters {
@@ -166,4 +137,91 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   hasMore: boolean;
+}
+
+// === Federal Hierarchy (SAM.gov org tree) ===
+
+export interface FederalOrg {
+  orgKey: string;
+  name: string;
+  code: string;
+  level: number;
+  parentOrgKey: string | null;
+  type: string;
+  agencyCode: string | null;
+  children?: FederalOrg[];
+}
+
+// === SBIR/STTR Topics ===
+
+export interface SbirTopic {
+  topicNumber: string;
+  topicTitle: string;
+  agency: string;
+  branch: string;
+  program: "SBIR" | "STTR";
+  phase: string;
+  description: string;
+  openDate: string | null;
+  closeDate: string | null;
+  solicitation: string | null;
+}
+
+// === Contract Awards (SAM.gov FPDS replacement) ===
+
+export interface ContractAward {
+  id: string;
+  piid: string;
+  agencyName: string;
+  subAgencyName: string | null;
+  vendorName: string;
+  vendorUei: string | null;
+  awardAmount: number;
+  obligatedAmount: number;
+  signedDate: string;
+  naicsCode: string | null;
+  psc: string | null;
+  setAside: string | null;
+  competitionType: string | null;
+  description: string | null;
+}
+
+// === Federal Register (DFARS/acquisition rules) ===
+
+export interface FederalRegisterDocument {
+  id: string;
+  documentNumber: string;
+  title: string;
+  type: "rule" | "proposed_rule" | "notice" | "presidential_document";
+  abstractText: string | null;
+  publicationDate: string;
+  agencies: string[];
+  htmlUrl: string;
+  pdfUrl: string | null;
+  commentsDue: string | null;
+  significantRule: boolean;
+}
+
+// === Product Service Codes (SAM.gov PSC) ===
+
+export interface ProductServiceCode {
+  code: string;
+  description: string;
+  parentCode: string | null;
+  status: "active" | "inactive";
+}
+
+// === Regulations.gov (proposed rules & comments) ===
+
+export interface RegulationDocument {
+  id: string;
+  documentId: string;
+  title: string;
+  type: "Rule" | "Proposed Rule" | "Notice" | "Other";
+  agency: string;
+  postedDate: string;
+  commentsDue: string | null;
+  commentCount: number;
+  summary: string | null;
+  htmlUrl: string;
 }

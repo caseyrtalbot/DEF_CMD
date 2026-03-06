@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-barlow);
   --font-mono: var(--font-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -51,50 +51,160 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  /* Surface hierarchy */
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-gap: var(--surface-gap);
+  --color-surface-inset: var(--surface-inset);
+  --color-border-subtle: var(--border-subtle);
+  --color-ticker: var(--ticker-bg);
+  --color-ticker-fg: var(--ticker-fg);
+
+  /* Semantic data colors — adapt to light/dark */
+  --color-data-cyan: var(--data-cyan);
+  --color-data-amber: var(--data-amber);
+  --color-data-blue: var(--data-blue);
+  --color-data-green: var(--data-green);
+  --color-data-purple: var(--data-purple);
+  --color-data-red: var(--data-red);
 }
 
+/* ──────────────────────────────────────────────
+   Light theme — Daylight Terminal
+   All values are complete hsl() strings.
+   ────────────────────────────────────────────── */
 :root {
-  --background: 233 100% 3%;
-  --foreground: 214 32% 91%;
-  --card: 222 47% 6%;
-  --card-foreground: 214 32% 91%;
-  --popover: 222 47% 6%;
-  --popover-foreground: 214 32% 91%;
-  --primary: 217 91% 60%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 217 33% 17%;
-  --secondary-foreground: 214 32% 91%;
-  --muted: 217 33% 17%;
-  --muted-foreground: 215 20% 45%;
-  --accent: 217 33% 17%;
-  --accent-foreground: 214 32% 91%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 217 33% 12%;
-  --input: 217 33% 12%;
-  --ring: 217 91% 60%;
-  --radius: 0.25rem;
+  --background: hsl(216 20% 96%);
+  --foreground: hsl(222 47% 11%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(222 47% 11%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(222 47% 11%);
+  --primary: hsl(32 95% 38%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(220 14% 94%);
+  --secondary-foreground: hsl(222 47% 25%);
+  --muted: hsl(220 14% 91%);
+  --muted-foreground: hsl(215 16% 47%);
+  --accent: hsl(220 14% 94%);
+  --accent-foreground: hsl(222 47% 11%);
+  --destructive: hsl(0 72% 51%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(220 15% 87%);
+  --input: hsl(220 15% 84%);
+  --ring: hsl(32 95% 38%);
+  --radius: 0.125rem;
 
-  --amber: 38 92% 50%;
-  --green: 160 84% 39%;
-  --cyan: 188 94% 43%;
-  --red: 0 84% 60%;
-  --blue: 217 91% 60%;
+  /* Signal colors */
+  --amber: hsl(32 95% 38%);
+  --green: hsl(160 84% 28%);
+  --cyan: hsl(192 91% 30%);
+  --red: hsl(0 72% 45%);
+  --blue: hsl(221 83% 48%);
 
-  --chart-1: 217 91% 60%;
-  --chart-2: 160 84% 39%;
-  --chart-3: 38 92% 50%;
-  --chart-4: 188 94% 43%;
-  --chart-5: 0 84% 60%;
+  /* Data accent colors — darker for white backgrounds */
+  --data-cyan: hsl(192 91% 30%);
+  --data-amber: hsl(32 95% 40%);
+  --data-blue: hsl(221 83% 48%);
+  --data-green: hsl(158 80% 28%);
+  --data-purple: hsl(271 81% 48%);
+  --data-red: hsl(0 72% 45%);
 
-  --sidebar: 222 47% 6%;
-  --sidebar-foreground: 214 32% 91%;
-  --sidebar-primary: 217 91% 60%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 217 33% 17%;
-  --sidebar-accent-foreground: 214 32% 91%;
-  --sidebar-border: 217 33% 12%;
-  --sidebar-ring: 217 91% 60%;
+  --chart-1: hsl(32 95% 38%);
+  --chart-2: hsl(160 84% 28%);
+  --chart-3: hsl(221 83% 48%);
+  --chart-4: hsl(192 91% 30%);
+  --chart-5: hsl(0 72% 45%);
+
+  /* Surface hierarchy */
+  --surface-0: hsl(216 20% 96%);
+  --surface-1: hsl(0 0% 100%);
+  --surface-2: hsl(220 14% 96%);
+  --surface-gap: hsl(220 15% 87%);
+  --surface-inset: hsl(220 14% 94%);
+  --border-subtle: hsl(220 14% 91%);
+
+  /* Ticker — stays dark for stock-ticker feel */
+  --ticker-bg: hsl(222 47% 8%);
+  --ticker-fg: hsl(36 100% 50%);
+
+  --sidebar: hsl(0 0% 100%);
+  --sidebar-foreground: hsl(222 47% 11%);
+  --sidebar-primary: hsl(32 95% 38%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(220 14% 94%);
+  --sidebar-accent-foreground: hsl(222 47% 11%);
+  --sidebar-border: hsl(220 15% 87%);
+  --sidebar-ring: hsl(32 95% 38%);
+}
+
+/* ──────────────────────────────────────────────
+   Dark theme — Bloomberg Terminal
+   ────────────────────────────────────────────── */
+.dark {
+  --background: hsl(222 47% 3%);
+  --foreground: hsl(210 40% 90%);
+  --card: hsl(222 47% 5%);
+  --card-foreground: hsl(210 40% 90%);
+  --popover: hsl(222 47% 5%);
+  --popover-foreground: hsl(210 40% 90%);
+  --primary: hsl(36 100% 50%);
+  --primary-foreground: hsl(0 0% 0%);
+  --secondary: hsl(215 25% 12%);
+  --secondary-foreground: hsl(210 40% 80%);
+  --muted: hsl(215 25% 10%);
+  --muted-foreground: hsl(215 16% 47%);
+  --accent: hsl(215 25% 12%);
+  --accent-foreground: hsl(210 40% 90%);
+  --destructive: hsl(0 72% 51%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(215 25% 10%);
+  --input: hsl(215 25% 12%);
+  --ring: hsl(36 100% 50%);
+
+  /* Signal colors */
+  --amber: hsl(36 100% 50%);
+  --green: hsl(160 84% 39%);
+  --cyan: hsl(188 94% 43%);
+  --red: hsl(0 72% 51%);
+  --blue: hsl(217 91% 60%);
+
+  /* Data accent colors — vivid for dark backgrounds */
+  --data-cyan: hsl(188 86% 53%);
+  --data-amber: hsl(45 96% 56%);
+  --data-blue: hsl(213 94% 68%);
+  --data-green: hsl(158 64% 52%);
+  --data-purple: hsl(270 95% 75%);
+  --data-red: hsl(0 84% 60%);
+
+  --chart-1: hsl(36 100% 50%);
+  --chart-2: hsl(160 84% 39%);
+  --chart-3: hsl(217 91% 60%);
+  --chart-4: hsl(188 94% 43%);
+  --chart-5: hsl(0 72% 51%);
+
+  /* Surface hierarchy */
+  --surface-0: hsl(222 47% 3%);
+  --surface-1: hsl(222 47% 4%);
+  --surface-2: hsl(222 47% 5%);
+  --surface-gap: hsl(215 25% 7%);
+  --surface-inset: hsl(215 25% 8%);
+  --border-subtle: hsl(215 25% 8%);
+
+  /* Ticker */
+  --ticker-bg: hsl(0 0% 0%);
+  --ticker-fg: hsl(36 100% 50%);
+
+  --sidebar: hsl(222 47% 5%);
+  --sidebar-foreground: hsl(210 40% 90%);
+  --sidebar-primary: hsl(36 100% 50%);
+  --sidebar-primary-foreground: hsl(0 0% 0%);
+  --sidebar-accent: hsl(215 25% 12%);
+  --sidebar-accent-foreground: hsl(210 40% 90%);
+  --sidebar-border: hsl(215 25% 10%);
+  --sidebar-ring: hsl(36 100% 50%);
 }
 
 @layer base {
@@ -103,38 +213,193 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-barlow), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: hsl(var(--background));
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
-  border-radius: 3px;
+  background: var(--border);
+  border-radius: 0;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground));
+  background: var(--muted-foreground);
 }
 
+/* Monospace data class */
 .font-mono-data {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "ss01", "ss02";
 }
 
+/* Panel header */
 .panel-header {
-  @apply text-xs font-semibold uppercase tracking-widest text-muted-foreground;
+  @apply text-[13px] font-semibold uppercase tracking-[0.12em];
+  color: var(--primary);
+  font-family: var(--font-barlow), system-ui, sans-serif;
 }
 
+/* Signal color utilities */
+.text-signal {
+  color: var(--primary);
+}
+
+.bg-signal {
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+/* Live dot pulse */
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  50% { opacity: 0.15; }
 }
 .pulse-dot {
   animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Scanning line effect for panel headers */
+@keyframes scan-line {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+.scan-line::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--primary) 3%, transparent), transparent);
+  animation: scan-line 8s linear infinite;
+  pointer-events: none;
+}
+
+/* Data row hover */
+.data-row {
+  transition: background-color 0.1s ease;
+}
+.data-row:hover {
+  background-color: color-mix(in srgb, var(--primary) 4%, transparent);
+}
+
+/* Branch color accent classes */
+.branch-accent-all { --branch-color: #f59e0b; }
+.branch-accent-army { --branch-color: #4d7c0f; }
+.branch-accent-navy { --branch-color: #1d4ed8; }
+.branch-accent-usaf { --branch-color: #2563eb; }
+.branch-accent-darpa { --branch-color: #7c3aed; }
+.branch-accent-mda { --branch-color: #dc2626; }
+.branch-accent-socom { --branch-color: #b91c1c; }
+.branch-accent-disa { --branch-color: #0891b2; }
+.branch-accent-dla { --branch-color: #059669; }
+
+/* Ticker tape animation */
+@keyframes ticker-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.ticker-item {
+  animation: ticker-enter 0.2s ease-out;
+}
+
+/* Stagger animation for list items */
+.stagger-item {
+  animation: ticker-enter 0.15s ease-out both;
+}
+.stagger-item:nth-child(1) { animation-delay: 0ms; }
+.stagger-item:nth-child(2) { animation-delay: 30ms; }
+.stagger-item:nth-child(3) { animation-delay: 60ms; }
+.stagger-item:nth-child(4) { animation-delay: 90ms; }
+.stagger-item:nth-child(5) { animation-delay: 120ms; }
+.stagger-item:nth-child(6) { animation-delay: 150ms; }
+.stagger-item:nth-child(7) { animation-delay: 180ms; }
+.stagger-item:nth-child(8) { animation-delay: 210ms; }
+
+/* Bloomberg ticker scroll */
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-ticker-scroll {
+  animation: ticker-scroll 60s linear infinite;
+}
+
+/* Status dot indicators */
+.status-dot--green { background-color: #00c853; }
+.status-dot--amber { background-color: #ff8c00; }
+.status-dot--red { background-color: #ff1744; }
+.status-dot--gray { background-color: #555555; }
+
+/* Hatched pattern for stacked budget bars */
+.bg-hatched {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.4) 3px,
+    rgba(0,0,0,0.4) 6px
+  );
+}
+
+/* Service accent colors */
+.svc-navy { color: #4488cc; }
+.svc-army { color: #88aa44; }
+.svc-airforce { color: #6688dd; }
+.svc-spaceforce { color: #aaaacc; }
+.svc-defensewide { color: #ccaa44; }
+
+/* PEO category tags */
+.category-tag {
+  @apply text-[10px] font-medium px-2 py-0.5 uppercase tracking-wide;
+  background: var(--surface-inset);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  white-space: nowrap;
+}
+
+/* Budget context bar */
+.budget-context-bar {
+  @apply w-full h-5 relative overflow-hidden;
+  background: var(--surface-inset);
+  border: 1px solid var(--border);
+}
+
+/* Grid cell borders */
+.grid-cell {
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.grid-cell:last-child {
+  border-right: none;
+}
+
+/* Keyboard shortcut hint */
+.kbd {
+  @apply inline-flex items-center justify-center px-1.5 h-5 text-[10px] rounded-sm;
+  background: var(--surface-inset);
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Selection highlight */
+::selection {
+  background: color-mix(in srgb, var(--primary) 25%, transparent);
+  color: var(--foreground);
 }

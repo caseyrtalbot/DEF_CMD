@@ -1,38 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchAwards } from "@/lib/api/sam-awards";
-import type { AwardSearchFilters } from "@/lib/api/sam-awards";
+import { searchContractAwards } from "@/lib/api/contract-awards";
+import { DOD_AGENCIES } from "@/lib/dod-config";
+import type { ContractAwardFilters } from "@/lib/api/contract-awards";
 
 export async function GET(request: NextRequest) {
   try {
     const params = request.nextUrl.searchParams;
 
-    const filters: AwardSearchFilters = {};
+    const filters: ContractAwardFilters = {};
+
+    // Default to DoD agencies unless caller specifies others
+    const agencies = params.get("agencies");
+    filters.agencies = agencies ? agencies.split(",") : [...DOD_AGENCIES];
 
     const naicsCode = params.get("naicsCode");
     if (naicsCode) filters.naicsCode = naicsCode;
 
-    const agency = params.get("agency");
-    if (agency) filters.agency = agency;
+    const vendorName = params.get("vendorName");
+    if (vendorName) filters.vendorName = vendorName;
 
-    const vendor = params.get("vendor");
-    if (vendor) filters.vendor = vendor;
-
-    // SAM.gov requires date range — default to last 30 days
+    // Default to last 90 days for contract awards
     const today = new Date();
-    const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const ninetyDaysAgo = new Date(today);
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
-    filters.postedFrom = params.get("postedFrom") ?? thirtyDaysAgo.toISOString().split("T")[0];
-    filters.postedTo = params.get("postedTo") ?? today.toISOString().split("T")[0];
+    filters.dateSignedFrom =
+      params.get("dateSignedFrom") ??
+      ninetyDaysAgo.toISOString().split("T")[0];
+    filters.dateSignedTo =
+      params.get("dateSignedTo") ?? today.toISOString().split("T")[0];
 
     const limit = parseInt(params.get("limit") ?? "25", 10);
     const offset = parseInt(params.get("offset") ?? "0", 10);
 
-    const result = await searchAwards(filters, limit, offset);
+    const result = await searchContractAwards(filters, limit, offset);
     return NextResponse.json(result);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message.includes("429") ? 429 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

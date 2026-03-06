@@ -3,7 +3,9 @@ import {
   getSpendingByAgency,
   getSpendingByNaics,
   getSpendingOverTime,
+  getSpendingBySubAgency,
 } from "@/lib/api/usaspending";
+import { DOD_SPENDING_AGENCIES } from "@/lib/dod-config";
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,15 +27,18 @@ export async function GET(request: NextRequest) {
 
     switch (view) {
       case "agency": {
-        const result = await getSpendingByAgency(timePeriods, page);
+        // Show DoD sub-agency breakdown instead of all federal agencies
+        const result = await getSpendingBySubAgency(timePeriods, DOD_SPENDING_AGENCIES, page);
         return NextResponse.json(result);
       }
       case "naics": {
-        const result = await getSpendingByNaics(timePeriods, page);
+        // Scope NAICS spending to DoD agencies
+        const result = await getSpendingByNaics(timePeriods, page, 10, DOD_SPENDING_AGENCIES);
         return NextResponse.json(result);
       }
       case "time": {
-        const result = await getSpendingOverTime(timePeriods, group, page);
+        // Scope spending-over-time to DoD agencies
+        const result = await getSpendingOverTime(timePeriods, group, page, 12, DOD_SPENDING_AGENCIES);
         return NextResponse.json(result);
       }
       default:
