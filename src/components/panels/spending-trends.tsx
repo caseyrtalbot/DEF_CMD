@@ -93,8 +93,8 @@ export function SpendingTrends({ branch }: SpendingTrendsProps) {
           No spending data
         </div>
       ) : (
-        <div className="w-full h-full min-h-[180px] p-1.5">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="w-full h-full min-h-[240px] p-1.5">
+          <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
             {isVertical ? (
               <BarChart data={chartData} layout="vertical" margin={{ left: 2, right: 12, top: 2, bottom: 2 }}>
                 <XAxis
