@@ -28,29 +28,24 @@ interface SamAwardData {
   noticeId?: string;
   title?: string;
   solicitationNumber?: string;
-  department?: string;
-  office?: string;
+  fullParentPathName?: string;
   postedDate?: string;
   responseDeadLine?: string;
   typeOfSetAside?: string;
-  naicsCode?: { code?: string }[];
+  typeOfSetAsideDescription?: string;
+  naicsCode?: string;
+  naicsCodes?: string[];
   description?: string;
-  awardNumber?: string;
-  awardAmount?: number | string;
-  awardee?: {
-    name?: string;
-    ueiSAM?: string;
-  };
   award?: {
     amount?: number | string;
     date?: string;
     number?: string;
-    lineItemNumber?: string;
     awardee?: {
       name?: string;
       ueiSAM?: string;
+      cageCode?: string;
     };
-  };
+  } | null;
 }
 
 interface SamSearchResponse {
@@ -58,28 +53,33 @@ interface SamSearchResponse {
   opportunitiesData: SamAwardData[];
 }
 
+function extractAgency(fullParentPathName?: string): string {
+  if (!fullParentPathName) return "Unknown";
+  return fullParentPathName.split(".")[0]?.trim() ?? "Unknown";
+}
+
 function normalizeAward(raw: SamAwardData): Award {
-  const awardee = raw.award?.awardee ?? raw.awardee;
-  const rawAmount = raw.award?.amount ?? raw.awardAmount;
+  const awardee = raw.award?.awardee;
+  const rawAmount = raw.award?.amount;
   const amount = typeof rawAmount === "string" ? parseFloat(rawAmount) : (rawAmount ?? 0);
 
   return {
     id: raw.noticeId ?? "",
-    piid: raw.award?.number ?? raw.awardNumber ?? raw.solicitationNumber ?? "",
+    piid: raw.award?.number ?? raw.solicitationNumber ?? "",
     agencyId: "",
-    agencyName: raw.department ?? "",
-    vendorName: awardee?.name ?? "",
+    agencyName: extractAgency(raw.fullParentPathName),
+    vendorName: awardee?.name ?? "Unknown",
     vendorUei: awardee?.ueiSAM ?? null,
     awardAmount: amount,
     obligatedAmount: amount,
     signedDate: raw.award?.date ?? raw.postedDate ?? "",
     effectiveDate: raw.postedDate ?? "",
     completionDate: raw.responseDeadLine ?? null,
-    naicsCode: raw.naicsCode?.[0]?.code ?? null,
+    naicsCode: raw.naicsCode ?? raw.naicsCodes?.[0] ?? null,
     competitionType: null,
-    setAside: raw.typeOfSetAside ?? null,
+    setAside: raw.typeOfSetAsideDescription ?? raw.typeOfSetAside ?? null,
     contractType: null,
-    description: raw.description ?? null,
+    description: raw.title ?? raw.description ?? null,
   };
 }
 

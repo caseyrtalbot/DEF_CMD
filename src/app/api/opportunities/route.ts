@@ -20,11 +20,13 @@ export async function GET(request: NextRequest) {
     const setAsides = params.get("setAsides");
     if (setAsides) filters.setAsides = setAsides.split(",");
 
-    const postedFrom = params.get("postedFrom");
-    if (postedFrom) filters.postedFrom = postedFrom;
+    // SAM.gov requires date range — default to last 30 days
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const postedTo = params.get("postedTo");
-    if (postedTo) filters.postedTo = postedTo;
+    filters.postedFrom = params.get("postedFrom") ?? thirtyDaysAgo.toISOString().split("T")[0];
+    filters.postedTo = params.get("postedTo") ?? today.toISOString().split("T")[0];
 
     const type = params.get("type");
     if (type) filters.opportunityType = type;

@@ -23,17 +23,16 @@ function toSamDate(isoDate: string): string {
   return `${month}/${day}/${year}`;
 }
 
-/** Map SAM.gov opportunity type codes to our normalized type */
-function normalizeType(
-  ptype: string
-): Opportunity["type"] {
-  const typeMap: Record<string, Opportunity["type"]> = {
-    p: "presolicitation",
-    o: "solicitation",
-    k: "combined",
-    a: "award",
-  };
-  return typeMap[ptype?.toLowerCase()] ?? "solicitation";
+/** Map SAM.gov opportunity type string to our normalized type */
+function normalizeType(typeStr: string): Opportunity["type"] {
+  const lower = typeStr.toLowerCase();
+  if (lower.includes("presolicitation")) return "presolicitation";
+  if (lower.includes("award")) return "award";
+  if (lower.includes("combined")) return "combined";
+  if (lower.includes("solicitation")) return "solicitation";
+  // Single-letter codes
+  const codeMap: Record<string, Opportunity["type"]> = { p: "presolicitation", o: "solicitation", k: "combined", a: "award" };
+  return codeMap[lower] ?? "solicitation";
 }
 
 interface SamPointOfContact {
@@ -44,15 +43,21 @@ interface SamPointOfContact {
 }
 
 interface SamPlaceOfPerformance {
-  city?: { name?: string };
+  city?: { code?: string; name?: string };
   state?: { code?: string; name?: string };
   zip?: string;
   country?: { code?: string; name?: string };
 }
 
-interface SamNaicsCode {
-  code?: string;
-  description?: string;
+interface SamAward {
+  date?: string;
+  number?: string;
+  amount?: string;
+  awardee?: {
+    name?: string;
+    ueiSAM?: string;
+    cageCode?: string;
+  };
 }
 
 interface SamOpportunity {
@@ -61,16 +66,21 @@ interface SamOpportunity {
   solicitationNumber?: string;
   postedDate?: string;
   type?: string;
+  baseType?: string;
   responseDeadLine?: string;
   typeOfSetAside?: string;
-  naicsCode?: SamNaicsCode[];
-  classificationCode?: { code?: string }[];
+  typeOfSetAsideDescription?: string;
+  naicsCode?: string;
+  naicsCodes?: string[];
+  classificationCode?: string;
   pointOfContact?: SamPointOfContact[];
   placeOfPerformance?: SamPlaceOfPerformance;
-  resourceLinks?: string[];
+  resourceLinks?: string[] | null;
   description?: string;
-  department?: string;
-  office?: string;
+  fullParentPathName?: string;
+  organizationType?: string;
+  award?: SamAward | null;
+  uiLink?: string;
 }
 
 interface SamSearchResponse {
@@ -103,13 +113,26 @@ function normalizePointOfContact(
 }
 
 function normalizeNaicsCodes(
-  raw: SamNaicsCode[] | undefined
+  naicsCode?: string,
+  naicsCodes?: string[]
 ): NaicsCode[] {
-  if (!raw || !Array.isArray(raw)) return [];
-  return raw.map((n) => ({
-    code: n.code ?? "",
-    description: n.description ?? "",
+  const codes = naicsCodes ?? (naicsCode ? [naicsCode] : []);
+  return codes.map((code) => ({
+    code,
+    description: "",
   }));
+}
+
+function extractAgency(fullParentPathName?: string): string {
+  if (!fullParentPathName) return "Unknown";
+  const parts = fullParentPathName.split(".");
+  return parts[0]?.trim() ?? "Unknown";
+}
+
+function extractOffice(fullParentPathName?: string): string | null {
+  if (!fullParentPathName) return null;
+  const parts = fullParentPathName.split(".");
+  return parts.length > 1 ? parts[parts.length - 1]?.trim() ?? null : null;
 }
 
 function normalizeOpportunity(raw: SamOpportunity): Opportunity {
@@ -117,14 +140,14 @@ function normalizeOpportunity(raw: SamOpportunity): Opportunity {
     id: raw.noticeId ?? "",
     title: raw.title ?? "",
     solicitationNumber: raw.solicitationNumber ?? null,
-    type: normalizeType(raw.type ?? ""),
+    type: normalizeType(raw.type ?? raw.baseType ?? ""),
     postedDate: raw.postedDate ?? "",
     responseDeadline: raw.responseDeadLine ?? null,
-    agency: raw.department ?? "",
-    office: raw.office ?? null,
-    naicsCodes: normalizeNaicsCodes(raw.naicsCode),
-    setAside: raw.typeOfSetAside ?? null,
-    classificationCode: raw.classificationCode?.[0]?.code ?? null,
+    agency: extractAgency(raw.fullParentPathName),
+    office: extractOffice(raw.fullParentPathName),
+    naicsCodes: normalizeNaicsCodes(raw.naicsCode, raw.naicsCodes),
+    setAside: raw.typeOfSetAsideDescription ?? raw.typeOfSetAside ?? null,
+    classificationCode: raw.classificationCode ?? null,
     placeOfPerformance: normalizePlaceOfPerformance(raw.placeOfPerformance),
     pointOfContact: normalizePointOfContact(raw.pointOfContact),
     resourceLinks: raw.resourceLinks ?? [],
