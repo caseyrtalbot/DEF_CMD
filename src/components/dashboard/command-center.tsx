@@ -53,15 +53,9 @@ export function CommandCenter() {
         searchFocusRef={searchFocusRef}
       />
       <div className="flex-1 grid grid-rows-[1fr_1fr] grid-cols-[2fr_3fr] gap-px bg-border overflow-hidden">
-        <Panel title="Opportunities">
-          <OpportunityFeed filters={globalFilters} onSelect={setSelectedOpportunity} />
-        </Panel>
-        <Panel title="Pipeline">
-          <PipelineTracker />
-        </Panel>
-        <Panel title="Recent Awards">
-          <RecentAwards naicsCode={globalFilters.naicsCodes?.[0]} />
-        </Panel>
+        <OpportunityFeed filters={globalFilters} onSelect={setSelectedOpportunity} />
+        <PipelineTracker />
+        <RecentAwards naicsCode={globalFilters.naicsCodes?.[0]} />
         <div className="grid grid-rows-[1fr_1fr] gap-px bg-border">
           <Panel title="Spending Trends">
             <SpendingTrends />
