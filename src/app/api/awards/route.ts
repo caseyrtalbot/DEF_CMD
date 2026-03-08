@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchContractAwards } from "@/lib/api/contract-awards";
-import { DOD_AGENCIES } from "@/lib/dod-config";
+import { DOD_DEPARTMENT_CODE } from "@/lib/dod-config";
 import type { ContractAwardFilters } from "@/lib/api/contract-awards";
 
 export async function GET(request: NextRequest) {
@@ -9,9 +9,13 @@ export async function GET(request: NextRequest) {
 
     const filters: ContractAwardFilters = {};
 
-    // Default to DoD agencies unless caller specifies others
+    // Default to DoD via department code 9700; override with specific agencies if provided
     const agencies = params.get("agencies");
-    filters.agencies = agencies ? agencies.split(",") : [...DOD_AGENCIES];
+    if (agencies) {
+      filters.agencies = agencies.split(",");
+    } else {
+      filters.departmentCode = DOD_DEPARTMENT_CODE;
+    }
 
     const naicsCode = params.get("naicsCode");
     if (naicsCode) filters.naicsCode = naicsCode;
@@ -28,7 +32,8 @@ export async function GET(request: NextRequest) {
       params.get("dateSignedFrom") ??
       ninetyDaysAgo.toISOString().split("T")[0];
     filters.dateSignedTo =
-      params.get("dateSignedTo") ?? today.toISOString().split("T")[0];
+      params.get("dateSignedTo") ??
+      today.toISOString().split("T")[0];
 
     const limit = parseInt(params.get("limit") ?? "25", 10);
     const offset = parseInt(params.get("offset") ?? "0", 10);

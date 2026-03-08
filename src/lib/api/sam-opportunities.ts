@@ -152,6 +152,8 @@ function normalizeOpportunity(raw: SamOpportunity): Opportunity {
     pointOfContact: normalizePointOfContact(raw.pointOfContact),
     resourceLinks: raw.resourceLinks ?? [],
     description: raw.description ?? null,
+    pscCodes: raw.classificationCode ? [raw.classificationCode] : [],
+    samUrl: raw.uiLink ?? null,
   };
 }
 
@@ -169,10 +171,10 @@ function buildSearchParams(
     params.set("title", filters.keywords);
   }
   if (filters.naicsCodes?.length) {
-    params.set("naicsCode", filters.naicsCodes.join(","));
+    params.set("ncode", filters.naicsCodes.join(","));
   }
   if (filters.agencies?.length) {
-    params.set("deptname", filters.agencies.join(","));
+    params.set("organizationName", filters.agencies.join(","));
   }
   if (filters.setAsides?.length) {
     params.set("typeOfSetAside", filters.setAsides.join(","));
@@ -201,8 +203,16 @@ export async function searchOpportunities(
   const response = await fetch(url);
 
   if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    let resetInfo = "";
+    if (response.status === 429) {
+      const match = body.match(
+        /nextAccessTime[^"]*"?:?\s*"?(\d{4}-\w{3}-\d{2}[^"]*)/i
+      );
+      resetInfo = match ? ` (resets ${match[1].trim()})` : "";
+    }
     throw new Error(
-      `SAM.gov Opportunities API error: ${response.status} ${response.statusText}`
+      `SAM.gov Opportunities API error: ${response.status} ${response.statusText}${resetInfo}`
     );
   }
 
@@ -231,8 +241,16 @@ export async function getOpportunityById(
   const response = await fetch(url);
 
   if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    let resetInfo = "";
+    if (response.status === 429) {
+      const match = body.match(
+        /nextAccessTime[^"]*"?:?\s*"?(\d{4}-\w{3}-\d{2}[^"]*)/i
+      );
+      resetInfo = match ? ` (resets ${match[1].trim()})` : "";
+    }
     throw new Error(
-      `SAM.gov Opportunities API error: ${response.status} ${response.statusText}`
+      `SAM.gov Opportunities API error: ${response.status} ${response.statusText}${resetInfo}`
     );
   }
 

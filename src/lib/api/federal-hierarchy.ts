@@ -70,8 +70,16 @@ export async function searchOrgs(
   const response = await fetch(url);
 
   if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    let resetInfo = "";
+    if (response.status === 429) {
+      const match = body.match(
+        /nextAccessTime[^"]*"?:?\s*"?(\d{4}-\w{3}-\d{2}[^"]*)/i
+      );
+      resetInfo = match ? ` (resets ${match[1].trim()})` : "";
+    }
     throw new Error(
-      `SAM.gov Federal Hierarchy API error: ${response.status} ${response.statusText}`
+      `SAM.gov Federal Hierarchy API error: ${response.status} ${response.statusText}${resetInfo}`
     );
   }
 
@@ -107,8 +115,16 @@ export async function getOrgTree(
   const response = await fetch(url);
 
   if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    let resetInfo = "";
+    if (response.status === 429) {
+      const match = body.match(
+        /nextAccessTime[^"]*"?:?\s*"?(\d{4}-\w{3}-\d{2}[^"]*)/i
+      );
+      resetInfo = match ? ` (resets ${match[1].trim()})` : "";
+    }
     throw new Error(
-      `SAM.gov Federal Hierarchy API error: ${response.status} ${response.statusText}`
+      `SAM.gov Federal Hierarchy API error: ${response.status} ${response.statusText}${resetInfo}`
     );
   }
 

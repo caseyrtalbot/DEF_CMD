@@ -66,7 +66,7 @@ export function CommandCenter() {
       <KpiStrip />
 
       {/* Main grid — 3-column layout */}
-      <div className="flex-1 grid grid-cols-[minmax(280px,2fr)_minmax(280px,2fr)_minmax(320px,3fr)] gap-px bg-surface-gap overflow-hidden">
+      <div className="flex-1 grid grid-cols-[minmax(320px,3fr)_minmax(240px,2fr)_minmax(280px,3fr)] gap-px bg-surface-gap overflow-hidden">
         {/* Left column: Opportunities (full height) */}
         <OpportunityFeed
           filters={globalFilters}

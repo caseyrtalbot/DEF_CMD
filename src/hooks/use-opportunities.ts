@@ -12,8 +12,12 @@ async function fetchOpportunities(
   if (filters.agencies?.length) params.set("agencies", filters.agencies.join(","));
   if (filters.setAsides?.length) params.set("setAsides", filters.setAsides.join(","));
   if (filters.postedFrom) params.set("postedFrom", filters.postedFrom);
-  if (filters.postedTo) params.set("postedTo", filters.postedTo);
   if (filters.opportunityType) params.set("type", filters.opportunityType);
+  if (filters.psc) params.set("psc", filters.psc);
+  if (filters.state) params.set("state", filters.state);
+  if (filters.dueBefore) params.set("dueBefore", filters.dueBefore);
+  if (filters.sortBy) params.set("sortBy", filters.sortBy);
+  if (filters.sortOrder) params.set("sortOrder", filters.sortOrder);
   params.set("limit", String(limit));
   params.set("offset", String(offset));
 

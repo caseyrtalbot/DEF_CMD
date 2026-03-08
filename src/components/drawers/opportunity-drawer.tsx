@@ -97,19 +97,37 @@ export function OpportunityDrawer({
         </SheetHeader>
 
         <div className="px-4 pb-6 space-y-5">
-          {/* Save for Reference */}
-          <Button
-            size="sm"
-            onClick={handleSave}
-            disabled={saveOpportunity.isPending || saveOpportunity.isSuccess}
-            className="w-full"
-          >
-            {saveOpportunity.isSuccess
-              ? "Saved"
-              : saveOpportunity.isPending
-                ? "Saving..."
-                : "Save for Reference"}
-          </Button>
+          {/* Action buttons */}
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={saveOpportunity.isPending || saveOpportunity.isSuccess}
+              className="flex-1"
+            >
+              {saveOpportunity.isSuccess
+                ? "Saved"
+                : saveOpportunity.isPending
+                  ? "Saving..."
+                  : "Save for Reference"}
+            </Button>
+            {opportunity.samUrl && (
+              <Button
+                size="sm"
+                variant="outline"
+                asChild
+                className="shrink-0"
+              >
+                <a
+                  href={opportunity.samUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  SAM.gov
+                </a>
+              </Button>
+            )}
+          </div>
 
           {/* Status Row */}
           <div className="flex flex-wrap items-center gap-2">
@@ -166,6 +184,26 @@ export function OpportunityDrawer({
                   >
                     {naics.code}
                     {naics.description ? ` - ${naics.description}` : ""}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* PSC Codes */}
+          {opportunity.pscCodes.length > 0 && (
+            <div>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                PSC Codes
+              </span>
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {opportunity.pscCodes.map((code) => (
+                  <Badge
+                    key={code}
+                    variant="outline"
+                    className="text-[10px] font-mono-data"
+                  >
+                    {code}
                   </Badge>
                 ))}
               </div>

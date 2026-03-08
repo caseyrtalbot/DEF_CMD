@@ -1,7 +1,11 @@
 export {
-  searchOpportunities,
+  searchOpportunities as searchOpportunitiesSam,
   getOpportunityById,
 } from "./sam-opportunities";
+
+export {
+  searchOpportunities,
+} from "./govcon-opportunities";
 
 export {
   getSpendingByAgency,

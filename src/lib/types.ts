@@ -10,12 +10,14 @@ export interface Opportunity {
   agency: string;
   office: string | null;
   naicsCodes: NaicsCode[];
+  pscCodes: string[];
   setAside: string | null;
   classificationCode: string | null;
   placeOfPerformance: PlaceOfPerformance | null;
   pointOfContact: PointOfContact[];
   resourceLinks: string[];
   description: string | null;
+  samUrl: string | null;
 }
 
 export interface NaicsCode {
@@ -85,6 +87,11 @@ export interface SearchFilters {
   postedFrom?: string;
   postedTo?: string;
   opportunityType?: string;
+  psc?: string;
+  state?: string;
+  dueBefore?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 }
 
 export interface SavedSearch {

@@ -1,7 +1,10 @@
 // Centralized DoD/Defense configuration
 // All API clients and routes reference this for consistent defense scoping
 
-/** DoD top-tier agency names as recognized by SAM.gov `deptname` parameter */
+/** SAM.gov contract awards department code for all DoD agencies */
+export const DOD_DEPARTMENT_CODE = "9700";
+
+/** DoD top-tier agency names for SAM.gov `organizationName` filter */
 export const DOD_AGENCIES = [
   "DEPT OF DEFENSE",
   "DEPT OF THE ARMY",
@@ -57,7 +60,7 @@ export const DEFENSE_NAICS = [
 /** Default NAICS code strings for database preferences */
 export const DEFAULT_DEFENSE_NAICS = DEFENSE_NAICS.map((n) => n.code);
 
-/** SAM.gov `deptname` query value — comma-separated for multi-agency search */
+/** Comma-separated DoD agency names for SAM.gov organizationName filter */
 export const DOD_DEPT_FILTER = DOD_AGENCIES.join(",");
 
 /** Check if an agency name is a DoD entity */

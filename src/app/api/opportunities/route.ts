@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchOpportunities } from "@/lib/api/sam-opportunities";
-import { DOD_AGENCIES } from "@/lib/dod-config";
+import { searchOpportunities } from "@/lib/api/govcon-opportunities";
 import type { SearchFilters } from "@/lib/types";
 
 export async function GET(request: NextRequest) {
@@ -15,23 +14,37 @@ export async function GET(request: NextRequest) {
     const naicsCodes = params.get("naicsCodes");
     if (naicsCodes) filters.naicsCodes = naicsCodes.split(",");
 
-    // Default to DoD agencies unless caller specifies others
+    // Default to all DoD via agency filter; branch-specific agencies override
     const agencies = params.get("agencies");
-    filters.agencies = agencies ? agencies.split(",") : [...DOD_AGENCIES];
+    filters.agencies = agencies
+      ? agencies.split(",")
+      : ["DEPT OF DEFENSE"];
 
     const setAsides = params.get("setAsides");
     if (setAsides) filters.setAsides = setAsides.split(",");
 
-    // SAM.gov requires date range — default to last 30 days
-    const today = new Date();
-    const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const psc = params.get("psc");
+    if (psc) filters.psc = psc;
 
-    filters.postedFrom = params.get("postedFrom") ?? thirtyDaysAgo.toISOString().split("T")[0];
-    filters.postedTo = params.get("postedTo") ?? today.toISOString().split("T")[0];
+    const state = params.get("state");
+    if (state) filters.state = state;
 
     const type = params.get("type");
     if (type) filters.opportunityType = type;
+
+    const postedFrom = params.get("postedFrom");
+    if (postedFrom) filters.postedFrom = postedFrom;
+
+    const dueBefore = params.get("dueBefore");
+    if (dueBefore) filters.dueBefore = dueBefore;
+
+    const sortBy = params.get("sortBy");
+    if (sortBy) filters.sortBy = sortBy;
+
+    const sortOrder = params.get("sortOrder");
+    if (sortOrder === "asc" || sortOrder === "desc") {
+      filters.sortOrder = sortOrder;
+    }
 
     const limit = parseInt(params.get("limit") ?? "25", 10);
     const offset = parseInt(params.get("offset") ?? "0", 10);

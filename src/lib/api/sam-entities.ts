@@ -140,8 +140,16 @@ export async function searchEntities(
   const response = await fetch(url);
 
   if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    let resetInfo = "";
+    if (response.status === 429) {
+      const match = body.match(
+        /nextAccessTime[^"]*"?:?\s*"?(\d{4}-\w{3}-\d{2}[^"]*)/i
+      );
+      resetInfo = match ? ` (resets ${match[1].trim()})` : "";
+    }
     throw new Error(
-      `SAM.gov Entity API error: ${response.status} ${response.statusText}`
+      `SAM.gov Entity API error: ${response.status} ${response.statusText}${resetInfo}`
     );
   }
 
@@ -171,8 +179,16 @@ export async function getEntityByUei(
   const response = await fetch(url);
 
   if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    let resetInfo = "";
+    if (response.status === 429) {
+      const match = body.match(
+        /nextAccessTime[^"]*"?:?\s*"?(\d{4}-\w{3}-\d{2}[^"]*)/i
+      );
+      resetInfo = match ? ` (resets ${match[1].trim()})` : "";
+    }
     throw new Error(
-      `SAM.gov Entity API error: ${response.status} ${response.statusText}`
+      `SAM.gov Entity API error: ${response.status} ${response.statusText}${resetInfo}`
     );
   }
 
@@ -200,8 +216,16 @@ export async function getEntitiesByNaics(
   const response = await fetch(url);
 
   if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    let resetInfo = "";
+    if (response.status === 429) {
+      const match = body.match(
+        /nextAccessTime[^"]*"?:?\s*"?(\d{4}-\w{3}-\d{2}[^"]*)/i
+      );
+      resetInfo = match ? ` (resets ${match[1].trim()})` : "";
+    }
     throw new Error(
-      `SAM.gov Entity API error: ${response.status} ${response.statusText}`
+      `SAM.gov Entity API error: ${response.status} ${response.statusText}${resetInfo}`
     );
   }
 
